@@ -66,6 +66,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
 
     # Initialize robust mixture loss if requested
     robust_loss_fn = None
+    robust_logits_optimizer = None
     if opt.loss_type == "robust_mixture":
         if not ROBUST_MIXTURE_AVAILABLE:
             sys.exit("Robust mixture loss requested but stags.losses not available.")
@@ -80,11 +81,10 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
             learn_global_logits=opt.robust_learn_logits,
         ).cuda()
         if opt.robust_learn_logits:
-            gaussians.optimizer.add_param_group({
-                "params": [robust_loss_fn.global_logits],
-                "lr": opt.robust_logits_lr,
-                "name": "robust_logits",
-            })
+            robust_logits_optimizer = torch.optim.Adam(
+                [robust_loss_fn.global_logits],
+                lr=opt.robust_logits_lr,
+            )
 
     if checkpoint:
         ckpt_data = torch.load(checkpoint)
@@ -262,6 +262,9 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
                 else:
                     gaussians.optimizer.step()
                     gaussians.optimizer.zero_grad(set_to_none = True)
+                if robust_logits_optimizer is not None:
+                    robust_logits_optimizer.step()
+                    robust_logits_optimizer.zero_grad(set_to_none = True)
 
             if (iteration in checkpoint_iterations):
                 print("\n[ITER {}] Saving Checkpoint".format(iteration))
