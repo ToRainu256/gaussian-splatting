@@ -67,6 +67,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
     # Initialize robust mixture loss if requested
     robust_loss_fn = None
     robust_logits_optimizer = None
+    print(f"[DEBUG] loss_type = {opt.loss_type}")
     if opt.loss_type == "robust_mixture":
         if not ROBUST_MIXTURE_AVAILABLE:
             sys.exit("Robust mixture loss requested but stags.losses not available.")
@@ -80,6 +81,7 @@ def training(dataset, opt, pipe, testing_iterations, saving_iterations, checkpoi
             temperature=opt.robust_temperature,
             learn_global_logits=opt.robust_learn_logits,
         ).cuda()
+        print(f"[DEBUG] RobustMixtureLoss initialized with {len(candidates)} candidates: {[c.alpha for c in candidates]}")
         if opt.robust_learn_logits:
             robust_logits_optimizer = torch.optim.Adam(
                 [robust_loss_fn.global_logits],
