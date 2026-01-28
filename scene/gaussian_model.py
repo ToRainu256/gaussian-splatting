@@ -268,7 +268,7 @@ class GaussianModel:
                 with open(exposure_file, "r") as f:
                     exposures = json.load(f)
                 self.pretrained_exposures = {image_name: torch.FloatTensor(exposures[image_name]).requires_grad_(False).cuda() for image_name in exposures}
-                print(f"Pretrained exposures loaded.")
+                print("Pretrained exposures loaded.")
             else:
                 print(f"No exposure to be loaded at {exposure_file}")
                 self.pretrained_exposures = None
